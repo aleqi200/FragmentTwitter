@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_count"
+        android:orderInCategory="200"
+        android:title="140"
+        app:showAsAction="ifRoom"
+        android:enabled="false"
+        ></item>
+
+
+    <item
+        android:id="@+id/action_tweet"
+        android:orderInCategory="200"
+        android:title="TWEET"
+        android:enabled="false"
+        android:onClick="doTweet"
+        app:showAsAction="ifRoom"
+        ></item>
+
+</menu>
