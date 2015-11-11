@@ -28,7 +28,7 @@
         <TextView
             android:id="@+id/tvBody"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_toEndOf="@+id/ivProfileImage"
             android:layout_toRightOf="@+id/ivProfileImage"
             android:layout_below="@+id/tvUserId"
@@ -66,6 +66,62 @@
             android:layout_alignBottom="@+id/tvUserName"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true" />
+
+        <ImageSwitcher
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:id="@+id/imgButnRet"
+            android:src="@mipmap/ic_reply"
+            android:layout_below="@+id/tvBody"
+            android:onClick="onSwitch"
+            android:layout_alignLeft="@+id/tvBody"
+            android:layout_alignStart="@+id/tvBody"
+            android:inAnimation="@android:anim/fade_in"
+            android:outAnimation="@android:anim/fade_out"
+            android:duration="500"
+            />
+
+        <ImageView
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:id="@+id/imgBtnRTCount"
+            android:layout_alignBottom="@+id/imgButnRet"
+            android:layout_toRightOf="@+id/imgButnRet"
+            android:layout_toEndOf="@+id/imgButnRet"
+            android:src="@mipmap/ic_retweet"
+            android:layout_marginLeft="50dp"
+            android:layout_marginStart="50dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="10"
+            android:id="@+id/tvRTCount"
+            android:layout_alignTop="@+id/imgBtnRTCount"
+            android:layout_toRightOf="@+id/imgBtnRTCount"
+            android:layout_toEndOf="@+id/imgBtnRTCount"
+            android:layout_marginTop="4dp" />
+
+        <ImageView
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:id="@+id/imgBtnFavCount"
+            android:layout_alignBottom="@+id/imgBtnRTCount"
+            android:layout_toRightOf="@+id/imgBtnRTCount"
+            android:layout_toEndOf="@+id/imgBtnRTCount"
+            android:layout_marginLeft="50dp"
+            android:layout_marginStart="50dp"
+            android:src="@mipmap/ic_fav" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="20"
+            android:id="@+id/tvFavCount"
+            android:layout_alignTop="@+id/imgBtnRTCount"
+            android:layout_toRightOf="@+id/imgBtnFavCount"
+            android:layout_toEndOf="@+id/imgBtnFavCount"
+            android:layout_marginTop="4dp" />
     </RelativeLayout>
 
 

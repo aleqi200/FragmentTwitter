@@ -10,10 +10,15 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageSwitcher;
+import android.widget.ImageView;
 import android.widget.Toast;
+import android.widget.ViewSwitcher;
 
 import com.codepath.apps.adroidtweet.adapter.EndlessRecyclerOnScrollListener;
 import com.codepath.apps.adroidtweet.adapter.TweetsArrayAdapter;
+import com.codepath.apps.adroidtweet.data.TweetTimeLineHandler;
 import com.codepath.apps.adroidtweet.models.Tweet;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
@@ -103,31 +108,12 @@ public class TimelineActivity extends AppCompatActivity {
     }
 
     private void populateTimeline() {
-        client.getHomeTimeline(new JsonHttpResponseHandler() {
+        client.getHomeTimeline(new TweetTimeLineHandler(TimelineActivity.this) {
             @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
-                List<Tweet> tweets = Tweet.fromJsonArray(response);
+            protected void processTweets(List<Tweet> tweets) {
                 updateFirstId(tweets);
                 updateLastId(tweets);
                 tweetsAdapter.addAll(tweets);
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                Log.e("error on request", errorResponse == null ? null : errorResponse.toString(), throwable);
-                Toast.makeText(TimelineActivity.this, "failed request", Toast.LENGTH_LONG).show();
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONArray errorResponse) {
-                Log.e("error on request", errorResponse == null ? null : errorResponse.toString(), throwable);
-                Toast.makeText(TimelineActivity.this, "failed request", Toast.LENGTH_LONG).show();
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                Log.e("error on request", responseString, throwable);
-                Toast.makeText(TimelineActivity.this, "failed request", Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -139,8 +125,10 @@ public class TimelineActivity extends AppCompatActivity {
     }
 
     public void updateLastId(List<Tweet> tweets) {
-        long lastId = tweets.get(tweets.size() - 1).getTweetId();
-        listener.setLastId(lastId);
+        if (!tweets.isEmpty()) {
+            long lastId = tweets.get(tweets.size() - 1).getTweetId();
+            listener.setLastId(lastId);
+        }
     }
 
     @Override
@@ -170,37 +158,22 @@ public class TimelineActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 200 && resultCode == RESULT_OK) {
-
-            client.getHomeTimelineStarting(firstId, new JsonHttpResponseHandler() {
+            client.getHomeTimelineStarting(firstId, new TweetTimeLineHandler(TimelineActivity.this) {
                 @Override
-                public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
-
-                    List<Tweet> tweets = Tweet.fromJsonArray(response);
-                    Log.d("build tweets", String.valueOf(tweets.size()));
+                protected void processTweets(List<Tweet> tweets) {
                     if (!tweets.isEmpty()) {
                         firstId = tweets.get(0).getTweetId();
                     }
                     tweetsAdapter.addAllFirst(tweets);
                 }
-
-                @Override
-                public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                    Log.e("error on request", errorResponse == null ? null : errorResponse.toString(), throwable);
-                    Toast.makeText(TimelineActivity.this, "failed request", Toast.LENGTH_LONG).show();
-                }
-
-                @Override
-                public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONArray errorResponse) {
-                    Log.e("error on request", errorResponse == null ? null : errorResponse.toString(), throwable);
-                    Toast.makeText(TimelineActivity.this, "failed request", Toast.LENGTH_LONG).show();
-                }
-
-                @Override
-                public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                    Log.e("error on request", responseString, throwable);
-                    Toast.makeText(TimelineActivity.this, "failed request", Toast.LENGTH_LONG).show();
-                }
             });
+        }
+    }
+
+    public void onSwitch(View view) {
+        if (view instanceof ImageSwitcher && view.getId() == R.id.imgButnRet) {
+            ImageSwitcher imageSwitcher = (ImageSwitcher) view;
+            imageSwitcher.setImageResource(R.mipmap.ic_reply_press);
         }
     }
 }

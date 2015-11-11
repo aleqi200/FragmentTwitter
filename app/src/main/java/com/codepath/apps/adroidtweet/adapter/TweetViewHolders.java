@@ -4,8 +4,10 @@ import android.content.Context;
 import android.os.Handler;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.ImageSwitcher;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.ViewSwitcher;
 
 
 import com.codepath.apps.adroidtweet.R;
@@ -15,6 +17,9 @@ import com.squareup.picasso.Picasso;
 
 public class TweetViewHolders extends RecyclerView.ViewHolder {
 
+    private final ImageSwitcher mImageSwitcher;
+    private TextView tvRTCount;
+    private TextView tvFavCount;
     private Tweet tweet;
     private TextView tvUserName;
     private TextView tvUserId;
@@ -31,7 +36,9 @@ public class TweetViewHolders extends RecyclerView.ViewHolder {
         tvUserId = (TextView) itemView.findViewById(R.id.tvUserId);
         tvBody = (TextView) itemView.findViewById(R.id.tvBody);
         tvInterval = (TextView) itemView.findViewById(R.id.tvInterval);
-
+        tvRTCount = (TextView) itemView.findViewById(R.id.tvRTCount);
+        tvFavCount = (TextView) itemView.findViewById(R.id.tvFavCount);
+        mImageSwitcher = (ImageSwitcher) itemView.findViewById(R.id.imgButnRet);
     }
 
 
@@ -48,6 +55,16 @@ public class TweetViewHolders extends RecyclerView.ViewHolder {
         tvUserId.setText("@" + tweet.getUser().getScreenName());
         tvBody.setText(tweet.getBody());
         tvInterval.setText(tweet.getCreatedInterval());
+        tvFavCount.setText(String.valueOf(tweet.getFavoriteCount()));
+        tvRTCount.setText(String.valueOf(tweet.getRetweetCount()));
         Picasso.with(context).load(tweet.getUser().getProfileImageUrl()).into(imageView);
+        mImageSwitcher.setFactory(new ViewSwitcher.ViewFactory() {
+            @Override
+            public View makeView() {
+                ImageView imageView = new ImageView(context);
+                imageView.setImageResource(R.mipmap.ic_reply);
+                return imageView;
+            }
+        });
     }
 }

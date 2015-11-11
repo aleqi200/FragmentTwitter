@@ -8,6 +8,7 @@ import android.widget.Toast;
 
 
 import com.codepath.apps.adroidtweet.TwiterClient;
+import com.codepath.apps.adroidtweet.data.TweetTimeLineHandler;
 import com.codepath.apps.adroidtweet.models.Tweet;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
@@ -65,33 +66,12 @@ public class EndlessRecyclerOnScrollListener extends RecyclerView.OnScrollListen
     }
 
     public void onLoadMore() {
-        client.getHomeTimeline(lastId, new JsonHttpResponseHandler() {
+        client.getHomeTimeline(lastId, new TweetTimeLineHandler(context) {
             @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
-                Log.d("success", response.toString());
-                List<Tweet> tweets = Tweet.fromJsonArray(response);
-                Log.d("build tweets", String.valueOf(tweets.size()));
+            protected void processTweets(List<Tweet> tweets) {
                 long lastId = tweets.get(tweets.size() - 1).getTweetId();
                 EndlessRecyclerOnScrollListener.this.setLastId(lastId);
                 tweetsArrayAdapter.addAll(tweets);
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                Log.e("error on request", errorResponse == null ? null : errorResponse.toString(), throwable);
-                Toast.makeText(context, "failed request", Toast.LENGTH_LONG).show();
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONArray errorResponse) {
-                Log.e("error on request", errorResponse == null ? null : errorResponse.toString(), throwable);
-                Toast.makeText(context, "failed request", Toast.LENGTH_LONG).show();
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                Log.e("error on request", responseString, throwable);
-                Toast.makeText(context, "failed request", Toast.LENGTH_LONG).show();
             }
         });
     }

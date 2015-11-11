@@ -28,10 +28,14 @@ public class Tweet extends Model {
     private long tweetId;
     @Column(name = "body")
     private String body;
-    @Column(name = "Category", onUpdate = Column.ForeignKeyAction.SET_NULL, onDelete = Column.ForeignKeyAction.SET_NULL)
+    @Column(name = "user", onUpdate = Column.ForeignKeyAction.SET_NULL, onDelete = Column.ForeignKeyAction.SET_NULL)
     private User user;
     @Column(name = "createdAt")
-    private DateTime createdAt;
+    private long createdAt;
+    @Column(name = "retweetCount")
+    private int retweetCount;
+    @Column(name = "favoriteCount")
+    private int favoriteCount;
 
     public long getTweetId() {
         return tweetId;
@@ -45,12 +49,20 @@ public class Tweet extends Model {
         return user;
     }
 
-    public DateTime getCreatedAt() {
+    public long getCreatedAt() {
         return createdAt;
     }
 
+    public int getRetweetCount() {
+        return retweetCount;
+    }
+
+    public int getFavoriteCount() {
+        return favoriteCount;
+    }
+
     public String getCreatedInterval(){
-        Period period = new Period(DateTime.now(), getCreatedAt());
+        Period period = new Period(DateTime.now(), new DateTime(getCreatedAt()));
 
         if (period.getYears() != 0) {
             return Math.abs(period.getYears()) + "Y";
@@ -77,10 +89,12 @@ public class Tweet extends Model {
             tweet = new Tweet();
             tweet.body = jsonObject.getString("text");
             tweet.tweetId = jsonObject.getLong("id");
-            tweet.createdAt = fmt.parseDateTime(jsonObject.getString("created_at"));
+            tweet.createdAt = fmt.parseDateTime(jsonObject.getString("created_at")).getMillis();
             tweet.user = User.fromJson(jsonObject.getJSONObject("user"));
+            tweet.retweetCount = jsonObject.getInt("retweet_count");
+            tweet.favoriteCount = jsonObject.getInt("favorite_count");
         } catch (JSONException e) {
-            Log.e("error parsing object", jsonObject.toString());
+            Log.e("error parsing object", jsonObject.toString(), e);
             return null;
         }
         return tweet;
