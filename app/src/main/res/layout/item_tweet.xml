@@ -71,7 +71,6 @@
             android:layout_width="25dp"
             android:layout_height="25dp"
             android:id="@+id/imgButnRet"
-            android:src="@mipmap/ic_reply"
             android:layout_below="@+id/tvBody"
             android:onClick="onSwitch"
             android:layout_alignLeft="@+id/tvBody"

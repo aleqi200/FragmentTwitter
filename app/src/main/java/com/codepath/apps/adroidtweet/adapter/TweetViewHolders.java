@@ -27,6 +27,7 @@ public class TweetViewHolders extends RecyclerView.ViewHolder {
     public ImageView imageView;
     private TextView tvBody;
     private Context context;
+    private ViewSwitcher.ViewFactory viewFactory;
 
     public TweetViewHolders(View itemView) {
         super(itemView);
@@ -58,13 +59,16 @@ public class TweetViewHolders extends RecyclerView.ViewHolder {
         tvFavCount.setText(String.valueOf(tweet.getFavoriteCount()));
         tvRTCount.setText(String.valueOf(tweet.getRetweetCount()));
         Picasso.with(context).load(tweet.getUser().getProfileImageUrl()).into(imageView);
-        mImageSwitcher.setFactory(new ViewSwitcher.ViewFactory() {
-            @Override
-            public View makeView() {
-                ImageView imageView = new ImageView(context);
-                imageView.setImageResource(R.mipmap.ic_reply);
-                return imageView;
-            }
-        });
+        if (viewFactory == null) {
+            viewFactory = new ViewSwitcher.ViewFactory() {
+                @Override
+                public View makeView() {
+                    ImageView imageView = new ImageView(context);
+                    imageView.setImageResource(R.mipmap.ic_reply);
+                    return imageView;
+                }
+            };
+            mImageSwitcher.setFactory(viewFactory);
+        }
     }
 }
