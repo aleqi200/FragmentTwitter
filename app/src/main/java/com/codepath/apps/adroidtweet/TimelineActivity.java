@@ -2,133 +2,49 @@ package com.codepath.apps.adroidtweet;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageSwitcher;
-import android.widget.ImageView;
-import android.widget.Toast;
-import android.widget.ViewSwitcher;
 
-import com.codepath.apps.adroidtweet.adapter.EndlessRecyclerOnScrollListener;
-import com.codepath.apps.adroidtweet.adapter.TweetsArrayAdapter;
-import com.codepath.apps.adroidtweet.data.TweetTimeLineHandler;
-import com.codepath.apps.adroidtweet.models.Tweet;
-import com.loopj.android.http.JsonHttpResponseHandler;
-
-import org.apache.http.Header;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.util.List;
+import com.codepath.apps.adroidtweet.fragments.TweetsListFragment;
 
 public class TimelineActivity extends AppCompatActivity {
 
     private TwiterClient client;
-    private TweetsArrayAdapter tweetsAdapter;
-    private RecyclerView lvTweets;
-    private LinearLayoutManager mLayoutManager;
-    private EndlessRecyclerOnScrollListener listener;
-    private long firstId = 1;
-
-    private SwipeRefreshLayout swipeContainer;
+    private TweetsListFragment tweetsListFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_timeline);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle("");
         toolbar.setLogo(R.drawable.ic_twiter);
         setSupportActionBar(toolbar);
 
         client = TwiterApplication.getRestClient();
-        lvTweets = (RecyclerView) findViewById(R.id.lvTweets);
-        mLayoutManager = new LinearLayoutManager(this);
-        lvTweets.setHasFixedSize(false);
-        lvTweets.setLayoutManager(mLayoutManager);
-        tweetsAdapter = new TweetsArrayAdapter(this);
-        lvTweets.setAdapter(tweetsAdapter);
-        listener = new EndlessRecyclerOnScrollListener(mLayoutManager, client, tweetsAdapter, this);
-        lvTweets.addOnScrollListener(listener);
-
-        swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
-        // Setup refresh listener which triggers new data loading
-        swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                // Your code to refresh the list here.
-                // Make sure you call swipeContainer.setRefreshing(false)
-                // once the network request has completed successfully.
-                refreshTimeline();
-            }
-        });
-        // Configure the refreshing colors
-        swipeContainer.setColorSchemeResources(android.R.color.holo_blue_bright,
-                android.R.color.holo_green_light,
-                android.R.color.holo_orange_light,
-                android.R.color.holo_red_light);
-        populateTimeline();
-    }
-
-    private void refreshTimeline() {
-        client.getHomeTimelineStarting(firstId, new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
-                List<Tweet> tweets = Tweet.fromJsonArray(response);
-                updateFirstId(tweets);
-                tweetsAdapter.addAllFirst(tweets);
-                swipeContainer.setRefreshing(false);
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                Log.e("error on request", errorResponse == null ? null : errorResponse.toString(), throwable);
-                Toast.makeText(TimelineActivity.this, "failed request", Toast.LENGTH_LONG).show();
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONArray errorResponse) {
-                Log.e("error on request", errorResponse == null ? null : errorResponse.toString(), throwable);
-                Toast.makeText(TimelineActivity.this, "failed request", Toast.LENGTH_LONG).show();
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                Log.e("error on request", responseString, throwable);
-                Toast.makeText(TimelineActivity.this, "failed request", Toast.LENGTH_LONG).show();
-            }
-        });
-    }
-
-    private void populateTimeline() {
-        client.getHomeTimeline(new TweetTimeLineHandler(TimelineActivity.this) {
-            @Override
-            protected void processTweets(List<Tweet> tweets) {
-                updateFirstId(tweets);
-                updateLastId(tweets);
-                tweetsAdapter.addAll(tweets);
-            }
-        });
-    }
-
-    private void updateFirstId(List<Tweet> tweets) {
-        if (!tweets.isEmpty()) {
-            firstId = tweets.get(0).getTweetId();
+        if (tweetsListFragment == null) {
+            tweetsListFragment = TweetsListFragment.newInstance(client);
         }
+
+        addFragments();
     }
 
-    public void updateLastId(List<Tweet> tweets) {
-        if (!tweets.isEmpty()) {
-            long lastId = tweets.get(tweets.size() - 1).getTweetId();
-            listener.setLastId(lastId);
-        }
+    private void addFragments() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+
+        // 2. create fragment transations
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+
+        // 3. using Transaction add/replace fragment
+        transaction.replace(R.id.frame_layout, tweetsListFragment);
+
+        //4. commit txion
+        transaction.commit();
     }
 
     @Override
@@ -158,15 +74,7 @@ public class TimelineActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 200 && resultCode == RESULT_OK) {
-            client.getHomeTimelineStarting(firstId, new TweetTimeLineHandler(TimelineActivity.this) {
-                @Override
-                protected void processTweets(List<Tweet> tweets) {
-                    if (!tweets.isEmpty()) {
-                        firstId = tweets.get(0).getTweetId();
-                    }
-                    tweetsAdapter.addAllFirst(tweets);
-                }
-            });
+            tweetsListFragment.refreshTimeline();
         }
     }
 
