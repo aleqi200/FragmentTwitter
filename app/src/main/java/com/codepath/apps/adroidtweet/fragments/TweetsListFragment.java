@@ -11,10 +11,11 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.codepath.apps.adroidtweet.R;
+import com.codepath.apps.adroidtweet.TwiterApplication;
 import com.codepath.apps.adroidtweet.TwiterClient;
-import com.codepath.apps.adroidtweet.adapter.EndlessRecyclerOnScrollListener;
 import com.codepath.apps.adroidtweet.adapter.TweetsArrayAdapter;
 import com.codepath.apps.adroidtweet.data.TweetTimeLineHandler;
+import com.codepath.apps.adroidtweet.listener.BaseEndlessRecyclerOnScrollListener;
 import com.codepath.apps.adroidtweet.models.Tweet;
 
 import java.util.List;
@@ -22,26 +23,22 @@ import java.util.List;
 /**
  * Created by acampelo on 11/11/15.
  */
-public class TweetsListFragment extends Fragment {
+public abstract class TweetsListFragment extends Fragment {
     //inflation logic
 
-    private TweetsArrayAdapter tweetsAdapter;
-    private RecyclerView lvTweets;
-    private LinearLayoutManager mLayoutManager;
-    private EndlessRecyclerOnScrollListener listener;
-    private long firstId = 1;
+    protected TwiterClient client;
+    protected TweetsArrayAdapter tweetsAdapter;
+    protected RecyclerView lvTweets;
+    protected LinearLayoutManager mLayoutManager;
+    protected BaseEndlessRecyclerOnScrollListener listener;
+    protected long firstId = 1;
 
-    private SwipeRefreshLayout swipeContainer;
+    protected SwipeRefreshLayout swipeContainer;
 
-    private TwiterClient client;
+    private int swipeContainerId;
 
-    public static TweetsListFragment newInstance(TwiterClient client) {
-
-        Bundle args = new Bundle();
-        TweetsListFragment fragment = new TweetsListFragment();
-        fragment.client = client;
-        fragment.setArguments(args);
-        return fragment;
+    public TweetsListFragment(int swipeContainerId) {
+        this.swipeContainerId = swipeContainerId;
     }
 
     @Nullable
@@ -55,28 +52,34 @@ public class TweetsListFragment extends Fragment {
         lvTweets.setLayoutManager(mLayoutManager);
         tweetsAdapter = new TweetsArrayAdapter(getContext());
         lvTweets.setAdapter(tweetsAdapter);
-        listener = new EndlessRecyclerOnScrollListener(mLayoutManager, client, tweetsAdapter, getContext());
+        listener = createListener();
         lvTweets.addOnScrollListener(listener);
-
-        swipeContainer = (SwipeRefreshLayout) view.findViewById(R.id.swipeContainer);
-        // Setup refresh listener which triggers new data loading
-        swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                // Your code to refresh the list here.
-                // Make sure you call swipeContainer.setRefreshing(false)
-                // once the network request has completed successfully.
-                refreshTimeline();
-            }
-        });
-        // Configure the refreshing colors
-        swipeContainer.setColorSchemeResources(android.R.color.holo_blue_bright,
+        client = TwiterApplication.getRestClient();
+        this.swipeContainer = (SwipeRefreshLayout) view.findViewById(swipeContainerId);
+        this.swipeContainer.setColorSchemeResources(android.R.color.holo_blue_bright,
                 android.R.color.holo_green_light,
                 android.R.color.holo_orange_light,
                 android.R.color.holo_red_light);
-        populateTimeline();
+        this.swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refresh(TweetsListFragment.this.swipeContainer, getRefreshHandler());
+            }
+        });
+        populateTimeline(getHandler());
         return view;
     }
+
+    protected abstract void populateTimeline(TweetTimeLineHandler handler);
+
+    protected abstract BaseEndlessRecyclerOnScrollListener createListener();
+
+    /**
+     * refresh the timeline on swipe to refresh
+     *
+     * @param swipeContainer
+     */
+    protected abstract void refresh(SwipeRefreshLayout swipeContainer, TweetTimeLineHandler handler);
 
     //creation logic
 
@@ -85,40 +88,37 @@ public class TweetsListFragment extends Fragment {
         super.onCreate(savedInstanceState);
     }
 
-    public void refreshTimeline() {
-        client.getHomeTimelineStarting(firstId, new TweetTimeLineHandler(getContext()) {
-            @Override
-
-            protected void processTweets(List<Tweet> tweets) {
-                updateFirstId(tweets);
-                tweetsAdapter.addAllFirst(tweets);
-                swipeContainer.setRefreshing(false);
-            }
-        });
-    }
-
-    public void populateTimeline() {
-        client.getHomeTimeline(new TweetTimeLineHandler(getContext()) {
-            @Override
-            protected void processTweets(List<Tweet> tweets) {
-                updateFirstId(tweets);
-                updateLastId(tweets);
-                tweetsAdapter.addAll(tweets);
-            }
-        });
-    }
-
-    private void updateFirstId(List<Tweet> tweets) {
+    protected void updateFirstId(List<Tweet> tweets) {
         if (!tweets.isEmpty()) {
             firstId = tweets.get(0).getTweetId();
         }
     }
 
-    public void updateLastId(List<Tweet> tweets) {
+    protected void updateLastId(List<Tweet> tweets) {
         if (!tweets.isEmpty()) {
             long lastId = tweets.get(tweets.size() - 1).getTweetId();
             listener.setLastId(lastId);
         }
     }
 
+    private TweetTimeLineHandler getHandler() {
+        return new TweetTimeLineHandler(getContext()) {
+            @Override
+            protected void processTweets(List<Tweet> tweets) {
+                updateFirstId(tweets);
+                updateLastId(tweets);
+                tweetsAdapter.addAll(tweets);
+            }
+        };
+    }
+    private TweetTimeLineHandler getRefreshHandler() {
+        return new TweetTimeLineHandler(getContext()) {
+            @Override
+            protected void processTweets(List<Tweet> tweets) {
+                updateFirstId(tweets);
+                tweetsAdapter.addAllFirst(tweets);
+                swipeContainer.setRefreshing(false);
+            }
+        };
+    }
 }

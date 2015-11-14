@@ -1,7 +1,6 @@
 package com.codepath.apps.adroidtweet;
 
 import org.scribe.builder.api.Api;
-import org.scribe.builder.api.FlickrApi;
 import org.scribe.builder.api.TwitterApi;
 
 import android.content.Context;
@@ -44,14 +43,7 @@ public class TwiterClient extends OAuthBaseClient {
 	 *    i.e client.post(apiUrl, params, handler);
 	 */
 	public void getHomeTimeline(AsyncHttpResponseHandler handler) {
-		String apiUrl = getApiUrl("statuses/home_timeline.json");
-		// Can specify query string params directly or through RequestParams.
-		RequestParams params = new RequestParams();
-		params.put("count", 25);
-		params.put("contributor_details", false);
-		params.put("include_entities", false);
-		params.put("since_id", 1);
-		client.get(apiUrl, params, handler);
+		getHomeTimelineStarting(1, handler);
 	}
 
 	public void getHomeTimeline(long sinceId, AsyncHttpResponseHandler handler) {
@@ -76,11 +68,76 @@ public class TwiterClient extends OAuthBaseClient {
 		client.get(apiUrl, params, handler);
 	}
 
+	public void getUserTimeline(String screenName, AsyncHttpResponseHandler handler) {
+		getUserTimeline(screenName, 1, handler);
+	}
+
+	public void getUserTimeline(String screenName, long sinceId, AsyncHttpResponseHandler handler) {
+		String apiUrl = getApiUrl("statuses/user_timeline.json");
+		RequestParams params = new RequestParams();
+		params.put("count", 25);
+		params.put("contributor_details", false);
+		params.put("include_entities", false);
+		params.put("since_id", sinceId);
+		params.put("screen_name", screenName);
+		client.get(apiUrl, params, handler);
+	}
+
+	public void getUserTimelineStarting(String screenName, long sinceId, AsyncHttpResponseHandler handler) {
+		String apiUrl = getApiUrl("statuses/user_timeline.json");
+		RequestParams params = new RequestParams();
+		params.put("count", 25);
+		params.put("contributor_details", false);
+		params.put("include_entities", false);
+		params.put("max_id", sinceId);
+		params.put("screen_name", screenName);
+		client.get(apiUrl, params, handler);
+	}
+
+	public void getMentionsTimeline(AsyncHttpResponseHandler handler) {
+		String apiUrl = getApiUrl("statuses/mentions_timeline.json");
+		// Can specify query string params directly or through RequestParams.
+		RequestParams params = new RequestParams();
+		params.put("count", 25);
+		params.put("contributor_details", false);
+		params.put("include_entities", false);
+		client.get(apiUrl, params, handler);
+	}
+
+	public void getMentionsTimeline(long sinceId, AsyncHttpResponseHandler handler) {
+		String apiUrl = getApiUrl("statuses/mentions_timeline.json");
+		// Can specify query string params directly or through RequestParams.
+		RequestParams params = new RequestParams();
+		params.put("count", 25);
+		params.put("contributor_details", false);
+		params.put("include_entities", false);
+		params.put("max_id", sinceId);
+		client.get(apiUrl, params, handler);
+	}
+
+	public void getMentionsTimelineStarting(long sinceId, AsyncHttpResponseHandler handler) {
+		String apiUrl = getApiUrl("statuses/mentions_timeline.json");
+		// Can specify query string params directly or through RequestParams.
+		RequestParams params = new RequestParams();
+		params.put("count", 25);
+		params.put("since_id", sinceId);
+		client.get(apiUrl, params, handler);
+	}
+
 	public void postStatus(String status, AsyncHttpResponseHandler handler) {
 		String apiUrl = getApiUrl("statuses/update.json");
 		// Can specify query string params directly or through RequestParams.
 		RequestParams params = new RequestParams();
 		params.put("status", status);
 		client.post(apiUrl, params, handler);
+	}
+
+
+
+	public void getUserInfo(AsyncHttpResponseHandler handler) {
+		String apiUrl = getApiUrl("account/verify_credentials.json");
+		RequestParams params = new RequestParams();
+
+		client.get(apiUrl, params, handler);
 	}
 }

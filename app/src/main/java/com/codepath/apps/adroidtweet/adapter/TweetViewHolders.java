@@ -1,6 +1,7 @@
 package com.codepath.apps.adroidtweet.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Handler;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -10,6 +11,7 @@ import android.widget.TextView;
 import android.widget.ViewSwitcher;
 
 
+import com.codepath.apps.adroidtweet.ProfileActivity;
 import com.codepath.apps.adroidtweet.R;
 import com.codepath.apps.adroidtweet.TimelineActivity;
 import com.codepath.apps.adroidtweet.models.Tweet;
@@ -70,5 +72,13 @@ public class TweetViewHolders extends RecyclerView.ViewHolder {
             };
             mImageSwitcher.setFactory(viewFactory);
         }
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(context, ProfileActivity.class);
+                intent.putExtra("user", tweet.getUser());
+                context.startActivity(intent);
+            }
+        });
     }
 }

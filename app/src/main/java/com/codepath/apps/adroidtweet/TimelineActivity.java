@@ -2,8 +2,11 @@ package com.codepath.apps.adroidtweet;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -11,12 +14,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageSwitcher;
 
+import com.astuetz.PagerSlidingTabStrip;
+import com.codepath.apps.adroidtweet.adapter.SmartFragmentStatePagerAdapter;
+import com.codepath.apps.adroidtweet.fragments.HomeTimelineFragment;
+import com.codepath.apps.adroidtweet.fragments.MentionsFragment;
 import com.codepath.apps.adroidtweet.fragments.TweetsListFragment;
 
 public class TimelineActivity extends AppCompatActivity {
-
-    private TwiterClient client;
-    private TweetsListFragment tweetsListFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,12 +30,19 @@ public class TimelineActivity extends AppCompatActivity {
         toolbar.setLogo(R.drawable.ic_twiter);
         setSupportActionBar(toolbar);
 
-        client = TwiterApplication.getRestClient();
-        if (tweetsListFragment == null) {
-            tweetsListFragment = TweetsListFragment.newInstance(client);
-        }
-
-        addFragments();
+        ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
+        viewPager.setAdapter(new TweetsPageAdapter(getSupportFragmentManager()));
+        PagerSlidingTabStrip tabStrip = (PagerSlidingTabStrip) findViewById(R.id.tabs);
+        tabStrip.setViewPager(viewPager);
+//        if (savedInstanceState == null) {
+//            if (tweetsListFragment == null) {
+//                tweetsListFragment = HomeTimelineFragment.newInstance();
+//            }
+//            if (mentionsFragment == null) {
+//                mentionsFragment = MentionsFragment.newInstance();
+//            }
+//            addFragments();
+//        }
     }
 
     private void addFragments() {
@@ -41,7 +52,8 @@ public class TimelineActivity extends AppCompatActivity {
         FragmentTransaction transaction = fragmentManager.beginTransaction();
 
         // 3. using Transaction add/replace fragment
-        transaction.replace(R.id.frame_layout, tweetsListFragment);
+        //transaction.replace(R.id.frame_layout, tweetsListFragment);
+        //transaction.replace(R.id.frame_layout, mentionsFragment);
 
         //4. commit txion
         transaction.commit();
@@ -67,6 +79,11 @@ public class TimelineActivity extends AppCompatActivity {
             startActivityForResult(intent, 200);
             return true;
         }
+        if (id == R.id.action_profile) {
+            Intent intent = new Intent(this, ProfileActivity.class);
+            startActivityForResult(intent, 200);
+            return true;
+        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -74,7 +91,7 @@ public class TimelineActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 200 && resultCode == RESULT_OK) {
-            tweetsListFragment.refreshTimeline();
+            //tweetsListFragment.refreshTimeline();
         }
     }
 
@@ -83,6 +100,40 @@ public class TimelineActivity extends AppCompatActivity {
             ImageSwitcher imageSwitcher = (ImageSwitcher) view;
             imageSwitcher.setImageResource(R.mipmap.ic_reply_press);
         }
+    }
+
+    public class TweetsPageAdapter extends SmartFragmentStatePagerAdapter {
+        private static final int NUM_ITEMS = 2;
+        private TweetsListFragment[] fragments = new TweetsListFragment[NUM_ITEMS];
+        private final String[] titles = new String[]{"Home", "Mentions"};
+
+        public TweetsPageAdapter(FragmentManager fragmentManager) {
+            super(fragmentManager);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            TweetsListFragment fragment = fragments[position];
+            if (fragment == null && position == 0) {
+                fragment = HomeTimelineFragment.newInstance();
+                fragments[0] = fragment;
+            } else if (fragment == null && position == 1) {
+                fragment = MentionsFragment.newInstance();
+                fragments[1] = fragment;
+            }
+            return fragment;
+        }
+
+        @Override
+        public int getCount() {
+            return NUM_ITEMS;
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return titles[position];
+        }
+
     }
 }
 

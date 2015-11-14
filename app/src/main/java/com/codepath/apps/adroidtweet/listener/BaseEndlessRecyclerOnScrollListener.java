@@ -1,41 +1,35 @@
-package com.codepath.apps.adroidtweet.adapter;
+package com.codepath.apps.adroidtweet.listener;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.widget.Toast;
-
 
 import com.codepath.apps.adroidtweet.TwiterClient;
+import com.codepath.apps.adroidtweet.adapter.TweetsArrayAdapter;
 import com.codepath.apps.adroidtweet.data.TweetTimeLineHandler;
 import com.codepath.apps.adroidtweet.models.Tweet;
-import com.loopj.android.http.JsonHttpResponseHandler;
-
-import org.apache.http.Header;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.util.List;
 
-public class EndlessRecyclerOnScrollListener extends RecyclerView.OnScrollListener {
+public abstract class BaseEndlessRecyclerOnScrollListener extends RecyclerView.OnScrollListener {
     private static final int VISIBLE_THRESHOLD = 5; // The minimum amount of items to have below your current scroll position before loading more.
 
     private final Context context;
-    private final TwiterClient client;
+    protected final TwiterClient client;
     private final TweetsArrayAdapter tweetsArrayAdapter;
     private final LinearLayoutManager layoutManager;
-    private long lastId;
+    protected long lastId;
 
 
     private int previousTotal = 0; // The total number of items in the dataset after the last load
     private boolean loading = true; // True if we are still waiting for the last set of data to load.
     int firstVisibleItem, visibleItemCount, totalItemCount;
 
-    public EndlessRecyclerOnScrollListener(LinearLayoutManager linearLayoutManager,
-                                           TwiterClient twiterClient,
-                                           TweetsArrayAdapter tweetsArrayAdapter,
-                                           Context context) {
+    public BaseEndlessRecyclerOnScrollListener(LinearLayoutManager linearLayoutManager,
+                                               TwiterClient twiterClient,
+                                               TweetsArrayAdapter tweetsArrayAdapter,
+                                               Context context) {
         this.layoutManager = linearLayoutManager;
         this.tweetsArrayAdapter = tweetsArrayAdapter;
         this.client = twiterClient;
@@ -59,21 +53,24 @@ public class EndlessRecyclerOnScrollListener extends RecyclerView.OnScrollListen
         if (!loading && (totalItemCount - visibleItemCount)
                 <= (firstVisibleItem + VISIBLE_THRESHOLD)) {
             // End has been reached
-            onLoadMore();
+            onLoadMore(getHandler());
 
             loading = true;
         }
     }
 
-    public void onLoadMore() {
-        client.getHomeTimeline(lastId, new TweetTimeLineHandler(context) {
+    protected abstract void onLoadMore(TweetTimeLineHandler handler);
+
+    @NonNull
+    private TweetTimeLineHandler getHandler() {
+        return new TweetTimeLineHandler(context) {
             @Override
             protected void processTweets(List<Tweet> tweets) {
                 long lastId = tweets.get(tweets.size() - 1).getTweetId();
-                EndlessRecyclerOnScrollListener.this.setLastId(lastId);
+                BaseEndlessRecyclerOnScrollListener.this.setLastId(lastId);
                 tweetsArrayAdapter.addAll(tweets);
             }
-        });
+        };
     }
 
     public void setLastId(long lastId) {

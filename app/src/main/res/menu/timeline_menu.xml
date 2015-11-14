@@ -3,9 +3,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/action_compose"
+        android:icon="@drawable/ic_compose"
         android:orderInCategory="200"
         android:title="Compose"
-        android:icon="@drawable/ic_compose"
-        app:showAsAction="ifRoom"
-        ></item>
+        app:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/action_profile"
+        android:icon="@drawable/ic_profile"
+        android:orderInCategory="200"
+        android:title="User Profile"
+        app:showAsAction="ifRoom"/>
+
 </menu>
