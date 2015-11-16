@@ -25,7 +25,6 @@ import java.util.List;
 public class MentionsFragment extends TweetsListFragment {
 
     public MentionsFragment() {
-        super(R.id.swipeContainer);
     }
 
     @Override

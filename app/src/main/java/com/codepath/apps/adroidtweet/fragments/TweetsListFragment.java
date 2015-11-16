@@ -35,17 +35,12 @@ public abstract class TweetsListFragment extends Fragment {
 
     protected SwipeRefreshLayout swipeContainer;
 
-    private int swipeContainerId;
-
-    public TweetsListFragment(int swipeContainerId) {
-        this.swipeContainerId = swipeContainerId;
-    }
-
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_tweet_list, parent, false);
+        client = TwiterApplication.getRestClient();
         lvTweets = (RecyclerView) view.findViewById(R.id.lvTweets);
         mLayoutManager = new LinearLayoutManager(getContext());
         lvTweets.setHasFixedSize(false);
@@ -54,8 +49,7 @@ public abstract class TweetsListFragment extends Fragment {
         lvTweets.setAdapter(tweetsAdapter);
         listener = createListener();
         lvTweets.addOnScrollListener(listener);
-        client = TwiterApplication.getRestClient();
-        this.swipeContainer = (SwipeRefreshLayout) view.findViewById(swipeContainerId);
+        this.swipeContainer = (SwipeRefreshLayout) view.findViewById(R.id.swipeContainer);
         this.swipeContainer.setColorSchemeResources(android.R.color.holo_blue_bright,
                 android.R.color.holo_green_light,
                 android.R.color.holo_orange_light,

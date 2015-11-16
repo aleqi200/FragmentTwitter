@@ -16,9 +16,6 @@ import com.codepath.apps.adroidtweet.listener.EndlessUserTimelineRecyclerOnScrol
  * Created by acampelo on 11/13/15.
  */
 public class UserTimelineFragment extends TweetsListFragment {
-    public UserTimelineFragment() {
-        super(R.id.swipeContainer);
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {

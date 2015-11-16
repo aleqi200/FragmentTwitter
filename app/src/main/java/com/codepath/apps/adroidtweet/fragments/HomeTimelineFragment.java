@@ -23,10 +23,6 @@ import java.util.List;
  */
 public class HomeTimelineFragment extends TweetsListFragment {
 
-    public HomeTimelineFragment() {
-        super(R.id.swipeContainer);
-    }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         View view = super.onCreateView(inflater, parent, savedInstanceState);
